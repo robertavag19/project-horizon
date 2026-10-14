@@ -16,7 +16,8 @@ def subscription_environment():
     env = os.environ.copy()
     for name in ('OPENAI_API_KEY', 'CODEX_API_KEY', 'CODEX_ACCESS_TOKEN', 'OPENAI_BASE_URL',
                  'CODEX_APP_TOOLS_PIPE_PATH', 'CODEX_THREAD_ID', 'CODEX_SESSION_ID',
-                 'CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'CODEX_TASK_WORKSPACE_VERIFYING_IDENTITY'):
+                 'CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'CODEX_TASK_WORKSPACE_VERIFYING_IDENTITY',
+                 'CODEX_PERMISSION_PROFILE'):
         env.pop(name, None)
     env['PYTHONDONTWRITEBYTECODE'] = '1'
     return env
