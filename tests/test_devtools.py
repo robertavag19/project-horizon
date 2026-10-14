@@ -196,3 +196,28 @@ class EditValidationTests(unittest.TestCase):
             context = source_context(root)
         self.assertNotIn('SECRET', json.dumps(context))
         self.assertEqual(context['files'][0]['content'], 'Public')
+
+
+class CodexDiscoveryTests(unittest.TestCase):
+    def test_desktop_cli_found_without_path(self):
+        from devtools.workers import find_codex
+        with TemporaryDirectory() as folder:
+            executable = Path(folder) / 'OpenAI/Codex/bin/version/codex.exe'
+            executable.parent.mkdir(parents=True)
+            executable.write_text('fixture')
+            with patch.dict(os.environ, {'LOCALAPPDATA': folder, 'HORIZON_CODEX_PATH': '', 'CODEX_CLI_PATH': ''}), patch('devtools.workers.shutil.which', return_value=None):
+                self.assertEqual(find_codex(), [str(executable)])
+
+    def test_explicit_override_precedes_path(self):
+        from devtools.workers import find_codex
+        with TemporaryDirectory() as folder:
+            executable = Path(folder) / 'codex.exe'
+            executable.write_text('fixture')
+            with patch.dict(os.environ, {'HORIZON_CODEX_PATH': str(executable)}), patch('devtools.workers.shutil.which', return_value='other.exe'):
+                self.assertEqual(find_codex(), [str(executable)])
+
+    def test_invalid_override_is_not_silently_ignored(self):
+        from devtools.workers import find_codex
+        with patch.dict(os.environ, {'HORIZON_CODEX_PATH': 'missing-codex.exe'}):
+            with self.assertRaises(WorkerError):
+                find_codex()

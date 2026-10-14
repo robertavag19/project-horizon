@@ -42,9 +42,23 @@ def execute(command, *, cwd, env, timeout, input_text=None):
 
 
 def find_codex():
-    executable = shutil.which('codex.exe') or shutil.which('codex')
+    override = os.environ.get('HORIZON_CODEX_PATH')
+    if override and not Path(override).is_file():
+        raise WorkerError('invalid_codex_path: HORIZON_CODEX_PATH must point to the CLI executable')
+    executable = override or shutil.which('codex.exe') or shutil.which('codex')
     if not executable:
-        raise WorkerError('codex_not_installed: install Codex CLI and sign in with ChatGPT')
+        bundled = os.environ.get('CODEX_CLI_PATH')
+        if bundled and Path(bundled).is_file():
+            executable = bundled
+    if not executable:
+        local = os.environ.get('LOCALAPPDATA')
+        if local:
+            base = Path(local) / 'OpenAI' / 'Codex' / 'bin'
+            candidates = [p for p in base.glob('*/codex.exe') if p.is_file()]
+            if candidates:
+                executable = str(max(candidates, key=lambda p: p.stat().st_mtime))
+    if not executable:
+        raise WorkerError('codex_not_found: install Codex CLI or set HORIZON_CODEX_PATH to its executable, then sign in with ChatGPT')
     if Path(executable).suffix.lower() in ('.cmd', '.bat', '.ps1'):
         # Execute the actual CLI script through Node, rather than interpolating a shell command.
         script = Path(executable).parent / 'node_modules' / '@openai' / 'codex' / 'bin' / 'codex.js'

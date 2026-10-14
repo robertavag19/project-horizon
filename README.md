@@ -178,7 +178,9 @@ python -m devtools.cli --task "Add a focused test for empty source documents and
 
 The first command checks installation and authentication, with no model inference.
 If authentication is rejected, run `codex login` and choose ChatGPT. The CLI must be
-available on PATH. No API key is needed. The mock worker contacts no service.
+available on PATH or in the Windows desktop app installation. The coordinator
+automatically checks `%LOCALAPPDATA%/OpenAI/Codex/bin/*/codex.exe` when PATH discovery
+fails. You may set `HORIZON_CODEX_PATH` to a specific executable. No API key is needed. The mock worker contacts no service.
 
 For each task the coordinator:
 1. Requires a clean Git project with committed HEAD and verifies ChatGPT sign-in.
