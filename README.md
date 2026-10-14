@@ -103,7 +103,7 @@ Next: validate the adapter in one explicitly approved live run, then add a ten-t
 source-grounded reference suite. Keep live calls disabled by default.
 
 
-## Optional real LLM: OpenAI Responses API
+## Paid API adapter (parked; not our current workflow)
 
 `openai_provider.py` lets GPT-4.1 mini choose the same structured actions as the mock.
 It uses the Python standard library, so no new packages need installing. The model
@@ -156,3 +156,61 @@ Controls and limitations:
 Official references:
 - https://developers.openai.com/api/docs/guides/function-calling
 - https://developers.openai.com/api/docs/models/gpt-4.1-mini
+
+
+## Current development workflow: subscription-based Codex coordinator
+
+This is a development assistant for working on Horizon, separate from the Study agent.
+It uses the installed Codex CLI with **ChatGPT sign-in**, not an OpenAI API key. Model
+inference is remote and consumes your plan allowance; it is not offline or unlimited.
+The direct paid API adapter above is parked and remains opt-in. Do not enable it for
+this workflow.
+
+You can launch the coordinator without setting PYTHONPATH:
+
+```powershell
+cd "C:\Users\rober\Desktop\Ai agent\Horizon_Sprint_01"
+python -m devtools.cli --doctor
+python -m devtools.cli --worker mock --task "Exercise the development workflow"
+python -m devtools.cli --read-only --task "Inspect the source and suggest the smallest improvement. Do not edit files."
+python -m devtools.cli --task "Add a focused test for empty source documents and document the behavior."
+```
+
+The first command checks installation and authentication, with no model inference.
+If authentication is rejected, run `codex login` and choose ChatGPT. The CLI must be
+available on PATH. No API key is needed. The mock worker contacts no service.
+
+For each task the coordinator:
+1. Requires a clean Git project with committed HEAD and verifies ChatGPT sign-in.
+2. Creates a branch `codex/dev-...` and worktree under `runs/development/<run_id>`.
+   Your working checkout is preserved; ignored `.env` files are not copied.
+3. Invokes Codex via `codex exec --json`, with an explicit ChatGPT login restriction,
+   API-key/access-token environment variables removed, OpenAI provider selected,
+   user config ignored, web search/MCP/hooks disabled, and workspace-write sandbox.
+4. Runs `unittest discover` independently using the same Python interpreter.
+5. Returns failed test output for at most one repair attempt by default (`--max-repairs`
+   allows 0, 1 or 2). Each attempt is a new ephemeral Codex session with the task,
+   existing worktree changes, and failure context. No cross-chat copying is required.
+6. Leaves the worktree and report for review. No automatic commits, merge or push.
+
+Reports distinguish tests passing from task fulfillment: `tests_passed_review_required`
+means tests passed, not that every requested behavior was verified. Open the worktree
+path printed in `report.json` in VS Code to inspect changes. Use `git diff` there.
+Worktrees are retained for review; this increment does not automatically clean them up.
+
+Default worker timeout is 180 seconds; test timeout is 90 seconds. On timeout the
+coordinator terminates its child process tree. It does not enforce a Codex token cap;
+keep tasks small and retries low to conserve your plan allowance. The read-only command
+uses the read-only sandbox and disables repairs.
+
+The local JSONL trace stores only normalized event metadata, tool/command status,
+numeric usage where supplied, test counts and repair events. Prompts, raw commands,
+test output, worker replies and hidden reasoning are excluded from stored traces/reports.
+The final worker reply is displayed in CLI output only. Codex's own data handling
+still applies. Paths/changed filenames are included in the local report. Use synthetic
+materials. The coding worker is more capable than Study's three-tool controller; it is
+not a replacement model adapter for Study and does not automatically add Claude access.
+
+Official documentation:
+- https://learn.chatgpt.com/docs/auth
+- https://learn.chatgpt.com/docs/non-interactive-mode
