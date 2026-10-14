@@ -1,11 +1,12 @@
-"""Bounded provider-driven controller; no network or paid provider is included."""
+"""Bounded provider-driven controller; live providers require explicit opt-in."""
+from dataclasses import asdict
 from pathlib import Path
 import time
 import uuid
 
 from .core import split_passages
 from .evaluation import check_submission, evaluate_final
-from .models import Action, Observation, Provider
+from .models import Action, Observation, Provider, ProviderFailure, Usage
 from .tools import execute_tool, validate_action
 from .tracing import Recorder
 
@@ -49,10 +50,16 @@ def run_agent(document: str, question: str, log_dir: Path, provider: Provider, *
         try:
             action = provider.choose_action(question, tuple(history))
         except Exception as error:
-            recorder.record('provider_error', step, error_type=type(error).__name__)
-            termination = 'provider_error'
+            termination = error.reason if isinstance(error, ProviderFailure) else 'provider_error'
+            usage = getattr(provider, 'usage', Usage())
+            recorder.record('provider_error', step, error_type=type(error).__name__,
+                            termination_reason=termination,
+                            usage=asdict(usage) if isinstance(usage, Usage) else None)
             break
-        recorder.record('provider_result', step, duration_ms=round((time.perf_counter() - call_start) * 1000, 3))
+        usage = getattr(provider, 'usage', Usage())
+        recorder.record('provider_result', step,
+                        usage=asdict(usage) if isinstance(usage, Usage) else None,
+                        duration_ms=round((time.perf_counter() - call_start) * 1000, 3))
         if time.perf_counter() - start >= max_duration_seconds:
             termination = 'time_limit'
             break
@@ -120,12 +127,15 @@ def run_agent(document: str, question: str, log_dir: Path, provider: Provider, *
     duration_ms = round((time.perf_counter() - start) * 1000, 3)
     recorder.record('run_finished', step, termination_reason=termination, duration_ms=duration_ms,
                     recovery_observed=recovered, fault_applied=injected)
+    usage = getattr(provider, 'usage', Usage())
     return {
+        'model_usage': asdict(usage) if isinstance(usage, Usage) else None,
         'run_id': run_id, 'task_id': task_id, 'termination_reason': termination,
         'answer': submission['answer'] if submission else None,
         'citations': submission['citations'] if submission else [],
         'steps': step, 'duration_ms': duration_ms, 'fault_applied': injected,
         'recovery_observed': recovered, 'evaluation': final_check,
         'trace_file': str(recorder.path),
-        'limitations': 'Mock mode uses no LLM. Structural checks do not verify factual correctness.',
+        'limitations': ('Mock mode uses no LLM. ' if type(provider).__name__ == 'MockProvider' else '')
+                      + 'Structural checks do not verify factual correctness. Cost is estimated, not an invoice.',
     }
