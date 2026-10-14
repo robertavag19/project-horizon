@@ -1,12 +1,22 @@
 # Codex / Claude next-step handoff
 
-**Implementation update:** the bounded controller, mock provider, and opt-in OpenAI
-Responses adapter are now implemented. Live API behavior has not yet been tested.
-Next: obtain explicit paid-call approval, set a key locally, inspect one live trace,
-then create the ten-task reference evaluation suite. Follow the current README; the
-original acceptance criteria below remain the roadmap, not a completion claim.
+**Current implementation update:** the bounded Study controller and mock provider are
+implemented. The direct OpenAI API adapter is parked: the user does not want separate
+API spending. Do not enable it or request an API key for the current workflow.
 
-Project Horizon is primarily agent reliability research, not just a tutoring app. Review the current README and tests, and review the separate detailed Project Horizon strategy and engineering briefs if provided. **This repository is only a deterministic trace-testing baseline, not a real AI agent.**
+The local development coordinator (`python -m devtools.cli`) now uses subscription-only
+Codex ChatGPT sign-in. It supplies bounded source snapshots, validates structured file
+edits in an isolated worktree, runs tests independently and limits repair attempts.
+Read-only and actual edit tasks were validated live using the plan allowance. The
+implementation suite has 54 passing tests; a generated empty-document test produced
+55 passing tests in its retained demonstration worktree. No automatic merge or push.
+
+Next: review the generated change, build the ten-task reference evaluation suite, and
+choose a no-separate-API-cost inference path for Study itself. The development
+coordinator is not a Study model adapter and does not add Claude access automatically.
+The original Sprint 02 acceptance criteria below remain a roadmap, not a completion claim.
+
+Project Horizon is primarily agent reliability research, not just a tutoring app. Review the current README and tests, and review the separate detailed Project Horizon strategy and engineering briefs if provided. **Study defaults to a deterministic mock; the separate development coordinator has been tested with real subscription-based Codex.**
 
 Goal of Sprint 02: implement a genuine small study agent that uses an LLM to decide when to search/read evidence and when to finish, not merely a fixed script. Preserve bounded tool execution and detailed event tracing. Use a provider-independent model adapter, a deterministic test adapter for free CI tests, and an optional real provider that only activates when explicitly configured. Never make API calls by default; disclose potential cost. Provide commands, tests, known limitations and a reproducible 10-task evaluation example.
 
