@@ -68,6 +68,7 @@ Task:\n'''
     status = 'repair_limit'
     attempts = 0
     worker_reply = ''
+    worker_task_status = 'unknown'
     tests = TestResult(False, 0, '')
     for attempt in range(max_repairs + 1):
         attempts += 1
@@ -75,6 +76,7 @@ Task:\n'''
         try:
             result = worker.run(prompt, checkout)
             worker_reply = result.final_message
+            worker_task_status = result.task_status
             for event in result.events:
                 recorder.record('worker_event', attempts, **event)
             if not result.completed:
@@ -86,6 +88,9 @@ Task:\n'''
             recorder.record('development_error', attempts, reason=status)
             break
         recorder.record('tests_finished', attempts, passed=tests.passed, tests_run=tests.count)
+        if worker_task_status == 'blocked':
+            status = 'worker_blocked'
+            break
         if tests.passed:
             status = 'tests_passed_review_required'
             break
@@ -94,7 +99,7 @@ Task:\n'''
             recorder.record('repair_requested', attempts)
     changed = git(checkout, 'status', '--porcelain').splitlines()
     report = {
-        'run_id': run_id, 'status': status, 'worker_attempts': attempts,
+        'run_id': run_id, 'status': status, 'worker_task_status': worker_task_status, 'worker_attempts': attempts,
         'tests_passed': tests.passed, 'tests_run': tests.count,
         'branch': branch, 'worktree': str(checkout), 'changed_files': changed,
         'trace_file': str(recorder.path),

@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "task_status": {
+      "type": "string",
+      "enum": ["completed", "blocked"],
+      "description": "Use blocked if required tools, permissions or files were unavailable, even if the conversation ended normally."
+    },
+    "summary": {"type": "string", "description": "Brief final summary and material limitations, without secrets or hidden reasoning."}
+  },
+  "required": ["task_status", "summary"],
+  "additionalProperties": false
+}

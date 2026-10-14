@@ -13,9 +13,9 @@ from devtools.workers import (CodexWorker, WorkerError, WorkerResult, check_subs
 
 class WorkerTests(unittest.TestCase):
     def test_api_credentials_removed_from_child_environment(self):
-        with patch.dict(os.environ, {'OPENAI_API_KEY': 'secret', 'CODEX_API_KEY': 'secret', 'CODEX_ACCESS_TOKEN': 'secret', 'OPENAI_BASE_URL': 'https://example.invalid'}):
+        with patch.dict(os.environ, {'OPENAI_API_KEY': 'secret', 'CODEX_API_KEY': 'secret', 'CODEX_ACCESS_TOKEN': 'secret', 'OPENAI_BASE_URL': 'https://example.invalid', 'CODEX_APP_TOOLS_PIPE_PATH': 'parent-session'}):
             environment = subscription_environment()
-        for name in ('OPENAI_API_KEY', 'CODEX_API_KEY', 'CODEX_ACCESS_TOKEN', 'OPENAI_BASE_URL'):
+        for name in ('OPENAI_API_KEY', 'CODEX_API_KEY', 'CODEX_ACCESS_TOKEN', 'OPENAI_BASE_URL', 'CODEX_APP_TOOLS_PIPE_PATH'):
             self.assertNotIn(name, environment)
 
     def test_api_auth_rejected(self):
@@ -45,7 +45,7 @@ class WorkerTests(unittest.TestCase):
         self.assertEqual(event['usage'], {'input_tokens': 20})
 
     def test_worker_uses_subscription_and_sandbox_flags(self):
-        events = [json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': 'Done'}}), json.dumps({'type': 'turn.completed'})]
+        events = [json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': json.dumps({'task_status': 'completed', 'summary': 'Done'})}}), json.dumps({'type': 'turn.completed'})]
         with patch('devtools.workers.execute', return_value=subprocess.CompletedProcess([], 0, '\n'.join(events), '')) as execute:
             result = CodexWorker(command=['codex']).run('task', Path('.'))
         args = execute.call_args.args[0]
@@ -65,7 +65,7 @@ class WorkerTests(unittest.TestCase):
         self.assertNotIn('SECRET', str(error.exception))
 
     def test_read_only_flag(self):
-        with patch('devtools.workers.execute', return_value=subprocess.CompletedProcess([], 0, '{"type":"turn.completed"}', '')) as execute:
+        with patch('devtools.workers.execute', return_value=subprocess.CompletedProcess([], 0, '\n'.join([json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': json.dumps({'task_status': 'completed', 'summary': 'Done'})}}), '{"type":"turn.completed"}']), '')) as execute:
             CodexWorker(command=['codex'], read_only=True).run('task', Path('.'))
         self.assertIn('read-only', execute.call_args.args[0])
 
@@ -142,3 +142,18 @@ class CoordinatorTests(unittest.TestCase):
         with patch('devtools.coordinator.execute', return_value=subprocess.CompletedProcess([], 0, '', 'Ran 0 tests in 0.001s\nOK')):
             result = run_tests(Path('.'))
         self.assertFalse(result.passed)
+
+
+class BlockedTaskTests(unittest.TestCase):
+    def test_passing_tests_do_not_hide_blocked_task(self):
+        class BlockedWorker:
+            def preflight(self, root):
+                pass
+            def run(self, prompt, root):
+                return WorkerResult(True, [], 'Read blocked', 'blocked')
+        with TemporaryDirectory() as folder:
+            root = CoordinatorTests().make_repo(folder)
+            result = coordinate(root, 'task', BlockedWorker(), test_runner=lambda root: TestResult(True, 1, ''))
+        self.assertTrue(result['tests_passed'])
+        self.assertEqual(result['status'], 'worker_blocked')
+        self.assertEqual(result['worker_attempts'], 1)

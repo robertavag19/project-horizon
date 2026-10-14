@@ -14,7 +14,9 @@ class WorkerError(RuntimeError):
 
 def subscription_environment():
     env = os.environ.copy()
-    for name in ('OPENAI_API_KEY', 'CODEX_API_KEY', 'CODEX_ACCESS_TOKEN', 'OPENAI_BASE_URL'):
+    for name in ('OPENAI_API_KEY', 'CODEX_API_KEY', 'CODEX_ACCESS_TOKEN', 'OPENAI_BASE_URL',
+                 'CODEX_APP_TOOLS_PIPE_PATH', 'CODEX_THREAD_ID', 'CODEX_SESSION_ID',
+                 'CODEX_INTERNAL_ORIGINATOR_OVERRIDE', 'CODEX_TASK_WORKSPACE_VERIFYING_IDENTITY'):
         env.pop(name, None)
     env['PYTHONDONTWRITEBYTECODE'] = '1'
     return env
@@ -90,6 +92,7 @@ class WorkerResult:
     completed: bool
     events: list[dict]
     final_message: str = ''
+    task_status: str = 'completed'
 
 
 class CodexWorker:
@@ -107,7 +110,8 @@ class CodexWorker:
                    '--ignore-user-config', '--sandbox', 'read-only' if self.read_only else 'workspace-write',
                    '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
                    '-c', 'hide_agent_reasoning=true', '-c', 'web_search="disabled"',
-                   '-c', 'mcp_servers={}', '-c', 'hooks={}', '-']
+                   '-c', 'mcp_servers={}', '-c', 'hooks={}',
+                   '--output-schema', str(Path(__file__).with_name('worker_result.schema.json')), '-']
         result = execute(command, cwd=root, env=subscription_environment(),
                          timeout=self.timeout, input_text=prompt)
         normalized = []
@@ -131,7 +135,13 @@ class CodexWorker:
                 final_message = item.get('text', '') if isinstance(item.get('text'), str) else ''
         if result.returncode != 0 or failed or not complete:
             raise WorkerError('codex_run_failed: inspect CLI login, plan allowance and sandbox support')
-        return WorkerResult(True, normalized, final_message)
+        try:
+            summary = json.loads(final_message)
+            if set(summary) != {'task_status', 'summary'} or summary['task_status'] not in ('completed', 'blocked') or not isinstance(summary['summary'], str):
+                raise ValueError
+        except (ValueError, TypeError):
+            raise WorkerError('invalid_worker_summary') from None
+        return WorkerResult(True, normalized, summary['summary'], summary['task_status'])
 
 
 class MockWorker:
