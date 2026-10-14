@@ -1,0 +1,5 @@
+Centripetal acceleration always points toward the center of a circular path. For speed v and radius r, the magnitude is a = v squared divided by r. It changes velocity's direction even when speed is constant.
+
+Newton's second law relates the net force to mass and acceleration: F_net = m times a. The net force needed for circular motion points toward the circle's center.
+
+Static friction can prevent sliding between surfaces; kinetic friction acts when surfaces slide relative to each other. Maximum static friction is mu_s times normal force in the standard model.
