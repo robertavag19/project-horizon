@@ -30,14 +30,14 @@ def execute(command, *, cwd, env, timeout, input_text=None):
                                text=True, encoding='utf-8', errors='replace', **options)
     try:
         stdout, stderr = process.communicate(input_text, timeout=timeout)
-    except subprocess.TimeoutExpired:
+    except (subprocess.TimeoutExpired, KeyboardInterrupt) as error:
         if os.name == 'nt':
             subprocess.run(['taskkill', '/PID', str(process.pid), '/T', '/F'],
                            capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW, timeout=15)
         else:
             os.killpg(process.pid, signal.SIGKILL)
         process.communicate(timeout=15)
-        raise WorkerError('process_timeout') from None
+        raise WorkerError('process_cancelled' if isinstance(error, KeyboardInterrupt) else 'process_timeout') from None
     return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
@@ -128,7 +128,7 @@ def source_context(root):
     return {'files': snapshots, 'omitted': omitted}
 
 
-def apply_edits(root, changes, read_only=False):
+def apply_edits(root, changes, read_only=False, protected_tests=None):
     """Validate all edits before any write; only local text files are writable."""
     root = root.resolve()
     if not isinstance(changes, list) or len(changes) > 10 or (read_only and changes):
@@ -153,7 +153,7 @@ def apply_edits(root, changes, read_only=False):
         target = root / relative
         if target.is_symlink() or not target.resolve().is_relative_to(root) or target.resolve() in seen:
             raise WorkerError('invalid_worker_path')
-        if relative.parts[0] == 'tests' and target.exists():
+        if relative.parts[0] == 'tests' and (name.casefold() in {p.casefold() for p in protected_tests} if protected_tests is not None else target.exists()):
             raise WorkerError('existing_tests_are_protected')
         seen.add(target.resolve())
         prepared.append((target, content))
@@ -176,6 +176,7 @@ class CodexWorker:
         self.command = command or find_codex()
         self.timeout = timeout
         self.read_only = read_only
+        self.protected_tests = None
 
     def preflight(self, root):
         return check_subscription(self.command, root)
@@ -221,7 +222,7 @@ class CodexWorker:
             raise WorkerError('invalid_worker_summary') from None
         if summary['task_status'] == 'blocked' and summary['file_edits']:
             raise WorkerError('invalid_worker_edits')
-        count = apply_edits(root, summary['file_edits'], self.read_only)
+        count = apply_edits(root, summary['file_edits'], self.read_only, self.protected_tests)
         normalized.append({'kind': 'coordinator_edits_applied', 'file_count': count})
         return WorkerResult(True, normalized, summary['summary'], summary['task_status'])
 

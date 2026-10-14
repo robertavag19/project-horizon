@@ -8,7 +8,7 @@ import sys
 import uuid
 
 from horizon.tracing import Recorder
-from .workers import MockWorker, WorkerError, execute, subscription_environment
+from .workers import CodexWorker, MockWorker, WorkerError, execute, subscription_environment
 
 
 @dataclass
@@ -36,7 +36,25 @@ def run_tests(root, timeout=90):
     return TestResult(result.returncode == 0 and count > 0, count, output[-12000:])
 
 
-def coordinate(root: Path, task: str, worker, *, max_repairs=1, test_runner=run_tests):
+def session_checkout(root: Path, workspace_run: str):
+    """Reuse only a registered coordinator worktree in this repository."""
+    root = root.resolve()
+    if not isinstance(workspace_run, str) or not re.fullmatch(r'[0-9a-f]{32}', workspace_run):
+        raise WorkerError('invalid_workspace_session')
+    checkout = root / 'runs' / 'development' / workspace_run / 'worktree'
+    if checkout.is_symlink() or not checkout.resolve().is_relative_to(root / 'runs' / 'development'):
+        raise WorkerError('invalid_workspace_session')
+    listed = git(root, 'worktree', 'list', '--porcelain')
+    registered = [Path(line[9:]).resolve() for line in listed.splitlines() if line.startswith('worktree ')]
+    if checkout.resolve() not in registered:
+        raise WorkerError('workspace_not_registered')
+    branch = 'codex/dev-' + workspace_run[:12]
+    if git(checkout, 'branch', '--show-current') != branch:
+        raise WorkerError('workspace_branch_changed')
+    return checkout, branch
+
+
+def coordinate(root: Path, task: str, worker, *, max_repairs=1, test_runner=run_tests, workspace_run=None, extra_instructions='', conversation_context=''):
     root = root.resolve()
     if not isinstance(task, str) or not 1 <= len(task.strip()) <= 8000:
         raise ValueError('task must contain 1 to 8000 characters')
@@ -44,15 +62,20 @@ def coordinate(root: Path, task: str, worker, *, max_repairs=1, test_runner=run_
         raise ValueError('max_repairs must be 0, 1 or 2')
     if Path(git(root, 'rev-parse', '--show-toplevel')).resolve() != root:
         raise WorkerError('run_from_project_root')
-    if git(root, 'status', '--porcelain'):
+    if workspace_run is None and git(root, 'status', '--porcelain'):
         raise WorkerError('commit_or_stash_changes_first: worktree starts from committed HEAD')
     worker.preflight(root)
     run_id = uuid.uuid4().hex
     folder = root / 'runs' / 'development' / run_id
     folder.mkdir(parents=True)
-    checkout = folder / 'worktree'
-    branch = 'codex/dev-' + run_id[:12]
-    git(root, 'worktree', 'add', '-b', branch, str(checkout), 'HEAD')
+    if workspace_run is None:
+        checkout = folder / 'worktree'
+        branch = 'codex/dev-' + run_id[:12]
+        git(root, 'worktree', 'add', '-b', branch, str(checkout), 'HEAD')
+    else:
+        checkout, branch = session_checkout(root, workspace_run)
+    if isinstance(worker, CodexWorker):
+        worker.protected_tests = set(git(checkout, 'ls-files', '--', 'tests').splitlines())
     recorder = Recorder(folder / 'events.jsonl', run_id, 'development_task')
     recorder.record('development_started', 0, branch=branch,
                     worker='mock' if isinstance(worker, MockWorker) else 'codex', max_repairs=max_repairs)
@@ -64,6 +87,12 @@ Do not read .env, credential stores, or private files. Do not call paid model AP
 install packages, use external services, push, merge, commit, or delete this worktree.
 The coordinator runs tests independently. Give a brief final summary and limitations.
 Task:\n'''
+    if not isinstance(extra_instructions, str) or len(extra_instructions) > 4000:
+        raise ValueError('profile instructions exceed limit')
+    if not isinstance(conversation_context, str) or len(conversation_context) > 12000:
+        raise ValueError('conversation context exceeds limit')
+    instructions = extra_instructions + '\n' + instructions
+    task = conversation_context + '\nCurrent task:\n' + task
     prompt = instructions + task
     status = 'repair_limit'
     attempts = 0
@@ -99,7 +128,7 @@ Task:\n'''
             recorder.record('repair_requested', attempts)
     changed = git(checkout, 'status', '--porcelain').splitlines()
     report = {
-        'run_id': run_id, 'status': status, 'worker_task_status': worker_task_status, 'worker_attempts': attempts,
+        'run_id': run_id, 'workspace_run': workspace_run or run_id, 'status': status, 'worker_task_status': worker_task_status, 'worker_attempts': attempts,
         'tests_passed': tests.passed, 'tests_run': tests.count,
         'branch': branch, 'worktree': str(checkout), 'changed_files': changed,
         'trace_file': str(recorder.path),

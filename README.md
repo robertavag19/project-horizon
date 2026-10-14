@@ -223,3 +223,17 @@ not a replacement model adapter for Study and does not automatically add Claude 
 Official documentation:
 - https://learn.chatgpt.com/docs/auth
 - https://learn.chatgpt.com/docs/non-interactive-mode
+
+
+## Newton: personal development agent
+
+The development coordinator is now named **Newton**, separate from Horizon Reliability
+and Horizon Study. Start `python -m newton` from this folder to type tasks directly.
+Newton supports `/plan`, `/review`, `/status`, `/diff`, `/tests`, `/connections`,
+`/new` and `/quit`. Follow-up tasks reuse one isolated worktree; progress can be
+resumed with the printed session ID. Conversations stay in memory only.
+
+Preferences live in `newton.toml`. This is customization and workflow engineering,
+not model training. Codex is the only connected worker for now, using the verified
+ChatGPT sign-in. The paid API adapter remains parked. See `docs/NEWTON.md` for examples,
+limits and the distinction between Newton's role and Horizon's research components.
