@@ -186,22 +186,29 @@ For each task the coordinator:
    Your working checkout is preserved; ignored `.env` files are not copied.
 3. Invokes Codex via `codex exec --json`, with an explicit ChatGPT login restriction,
    API-key/access-token environment variables removed, OpenAI provider selected,
-   user config ignored, web search/MCP/hooks disabled, and workspace-write sandbox.
-4. Runs `unittest discover` independently using the same Python interpreter.
-5. Returns failed test output for at most one repair attempt by default (`--max-repairs`
+   user config ignored, web search/MCP/hooks disabled, and a read-only worker sandbox.
+4. Supplies at most 64 KB of permitted source snapshots to Codex, which returns
+   structured file edits. The coordinator validates every path before writing in the
+   worktree. At most ten text files per attempt; existing tests, hidden folders,
+   credentials and config files cannot be overwritten. New tests are allowed.
+5. Runs `unittest discover` independently using the same Python interpreter.
+6. Returns failed test output for at most one repair attempt by default (`--max-repairs`
    allows 0, 1 or 2). Each attempt is a new ephemeral Codex session with the task,
    existing worktree changes, and failure context. No cross-chat copying is required.
-6. Leaves the worktree and report for review. No automatic commits, merge or push.
+7. Leaves the worktree and report for review. No automatic commits, merge or push.
 
-Reports distinguish tests passing from task fulfillment: `tests_passed_review_required`
+Structured worker summaries distinguish completed from blocked tasks. A blocked
+task exits with code 1 even when tests pass. The summary is a model assertion, not
+independent proof of fulfillment. Reports distinguish tests passing from task fulfillment: `tests_passed_review_required`
 means tests passed, not that every requested behavior was verified. Open the worktree
 path printed in `report.json` in VS Code to inspect changes. Use `git diff` there.
 Worktrees are retained for review; this increment does not automatically clean them up.
 
 Default worker timeout is 180 seconds; test timeout is 90 seconds. On timeout the
 coordinator terminates its child process tree. It does not enforce a Codex token cap;
-keep tasks small and retries low to conserve your plan allowance. The read-only command
-uses the read-only sandbox and disables repairs.
+keep tasks small and retries low to conserve your plan allowance. The `--read-only` command
+rejects all proposed edits and disables repairs. The worker always uses a read-only
+sandbox; only the coordinator applies validated edits.
 
 The local JSONL trace stores only normalized event metadata, tool/command status,
 numeric usage where supplied, test counts and repair events. Prompts, raw commands,

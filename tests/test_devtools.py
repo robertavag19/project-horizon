@@ -45,7 +45,7 @@ class WorkerTests(unittest.TestCase):
         self.assertEqual(event['usage'], {'input_tokens': 20})
 
     def test_worker_uses_subscription_and_sandbox_flags(self):
-        events = [json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': json.dumps({'task_status': 'completed', 'summary': 'Done'})}}), json.dumps({'type': 'turn.completed'})]
+        events = [json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': json.dumps({'task_status': 'completed', 'summary': 'Done', 'file_edits': []})}}), json.dumps({'type': 'turn.completed'})]
         with patch('devtools.workers.execute', return_value=subprocess.CompletedProcess([], 0, '\n'.join(events), '')) as execute:
             result = CodexWorker(command=['codex']).run('task', Path('.'))
         args = execute.call_args.args[0]
@@ -53,9 +53,9 @@ class WorkerTests(unittest.TestCase):
         self.assertIn('model_provider="openai"', args)
         self.assertIn('--ignore-user-config', args)
         self.assertIn('--ephemeral', args)
-        self.assertIn('workspace-write', args)
+        self.assertIn('read-only', args)
         self.assertNotIn('--dangerously-bypass-approvals-and-sandbox', args)
-        self.assertEqual(execute.call_args.kwargs['input_text'], 'task')
+        self.assertTrue(execute.call_args.kwargs['input_text'].startswith('task'))
         self.assertTrue(result.completed)
 
     def test_worker_requires_completion_event(self):
@@ -65,7 +65,7 @@ class WorkerTests(unittest.TestCase):
         self.assertNotIn('SECRET', str(error.exception))
 
     def test_read_only_flag(self):
-        with patch('devtools.workers.execute', return_value=subprocess.CompletedProcess([], 0, '\n'.join([json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': json.dumps({'task_status': 'completed', 'summary': 'Done'})}}), '{"type":"turn.completed"}']), '')) as execute:
+        with patch('devtools.workers.execute', return_value=subprocess.CompletedProcess([], 0, '\n'.join([json.dumps({'type': 'item.completed', 'item': {'type': 'agent_message', 'text': json.dumps({'task_status': 'completed', 'summary': 'Done', 'file_edits': []})}}), '{"type":"turn.completed"}']), '')) as execute:
             CodexWorker(command=['codex'], read_only=True).run('task', Path('.'))
         self.assertIn('read-only', execute.call_args.args[0])
 
@@ -157,3 +157,42 @@ class BlockedTaskTests(unittest.TestCase):
         self.assertTrue(result['tests_passed'])
         self.assertEqual(result['status'], 'worker_blocked')
         self.assertEqual(result['worker_attempts'], 1)
+
+
+class EditValidationTests(unittest.TestCase):
+    def test_allowed_edit_applied(self):
+        from devtools.workers import apply_edits
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            apply_edits(root, [{'path': 'src/horizon/example.py', 'content': 'VALUE=1'}])
+            self.assertEqual((root / 'src/horizon/example.py').read_text(), 'VALUE=1')
+
+    def test_unsafe_edits_rejected_before_writing(self):
+        from devtools.workers import apply_edits
+        for name in ('../outside.py', '.env', 'src/../outside.py', 'C:/outside.py', 'devtools/cli.py'):
+            with self.subTest(name=name), TemporaryDirectory() as folder:
+                root = Path(folder)
+                with self.assertRaises(WorkerError):
+                    apply_edits(root, [{'path': 'README.md', 'content': 'x'}, {'path': name, 'content': 'x'}])
+                self.assertFalse((root / 'README.md').exists())
+
+    def test_existing_tests_and_read_only_edits_rejected(self):
+        from devtools.workers import apply_edits
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / 'tests').mkdir()
+            (root / 'tests/test_existing.py').write_text('original')
+            with self.assertRaises(WorkerError):
+                apply_edits(root, [{'path': 'tests/test_existing.py', 'content': 'changed'}])
+            with self.assertRaises(WorkerError):
+                apply_edits(root, [{'path': 'README.md', 'content': 'changed'}], read_only=True)
+
+    def test_context_excludes_env_and_runs(self):
+        from devtools.workers import source_context
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root / '.env').write_text('SECRET')
+            (root / 'README.md').write_text('Public')
+            context = source_context(root)
+        self.assertNotIn('SECRET', json.dumps(context))
+        self.assertEqual(context['files'][0]['content'], 'Public')

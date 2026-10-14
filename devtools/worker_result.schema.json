@@ -3,11 +3,40 @@
   "properties": {
     "task_status": {
       "type": "string",
-      "enum": ["completed", "blocked"],
+      "enum": [
+        "completed",
+        "blocked"
+      ],
       "description": "Use blocked if required tools, permissions or files were unavailable, even if the conversation ended normally."
     },
-    "summary": {"type": "string", "description": "Brief final summary and material limitations, without secrets or hidden reasoning."}
+    "summary": {
+      "type": "string",
+      "description": "Brief final summary and material limitations, without secrets or hidden reasoning."
+    },
+    "file_edits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ],
+        "additionalProperties": false
+      }
+    }
   },
-  "required": ["task_status", "summary"],
+  "required": [
+    "task_status",
+    "summary",
+    "file_edits"
+  ],
   "additionalProperties": false
 }
