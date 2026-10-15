@@ -80,3 +80,22 @@ browsing, file deletion, Git merges/pushes and other bots are not added to its t
 Use small task stages. If needed context exceeds snapshot limits, Newton should
 report blocked instead of inventing missing files. No live worker transcript is
 saved in Horizon traces; only normalized metadata and final report information.
+
+
+## Rejected worker responses
+
+A validation rejection is a failed attempt, not a test result. `Tests: 0` means the
+coordinator did not run tests after rejecting the proposal. Reports now include the
+exact rule in `last_error` and whether the task was read-only. Normalized worker
+events are retained even when the final edit proposal is rejected; source text and
+raw replies remain excluded from traces.
+
+Examples include `blocked_status_with_edits` (the worker reported blocked while also
+proposing edits), `read_only_edit_rejected`, `invalid_edit_fields`, and
+`invalid_edit_content`. For a validation rejection Newton may request a corrected
+response within the existing repair budget. It does not relax path restrictions or
+protective checks. A genuinely blocked response must propose no edits. The model's
+job is to propose changes; the coordinator writes them and runs tests.
+
+After a Newton code update, exit the running Python process with `/quit` and restart
+using its printed `--resume` command so the updated modules are loaded.

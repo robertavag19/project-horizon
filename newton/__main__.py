@@ -27,6 +27,8 @@ HELP = '''Type a task in plain English. Newton works in an isolated worktree.
 def show_report(report):
     print('\n' + report['worker_reply'])
     print(f"Status: {report['status']} | Tests: {report['tests_run']} | Passed: {report['tests_passed']}")
+    if report.get('last_error'):
+        print('Last rejected attempt: ' + report['last_error'])
     print('Workspace: ' + report['worktree'])
     print('Report: ' + report['report_file'])
 

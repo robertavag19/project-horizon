@@ -7,7 +7,7 @@
         "completed",
         "blocked"
       ],
-      "description": "Use blocked if required tools, permissions or files were unavailable, even if the conversation ended normally."
+      "description": "Use completed when the requested summary or edit proposals are ready. The coordinator applies edits and runs tests. Use blocked only for a missing requirement or context; a blocked response must have an empty file_edits array."
     },
     "summary": {
       "type": "string",

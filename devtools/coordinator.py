@@ -77,7 +77,8 @@ def coordinate(root: Path, task: str, worker, *, max_repairs=1, test_runner=run_
     if isinstance(worker, CodexWorker):
         worker.protected_tests = set(git(checkout, 'ls-files', '--', 'tests').splitlines())
     recorder = Recorder(folder / 'events.jsonl', run_id, 'development_task')
-    recorder.record('development_started', 0, branch=branch,
+    read_only = bool(getattr(worker, 'read_only', False))
+    recorder.record('development_started', 0, branch=branch, read_only=read_only,
                     worker='mock' if isinstance(worker, MockWorker) else 'codex', max_repairs=max_repairs)
     # Prompt and test output are used in memory only, not written to traces/reports.
     instructions = '''Work only on the following task in this Git worktree.
@@ -98,6 +99,7 @@ Task:\n'''
     attempts = 0
     worker_reply = ''
     worker_task_status = 'unknown'
+    last_error = None
     tests = TestResult(False, 0, '')
     for attempt in range(max_repairs + 1):
         attempts += 1
@@ -114,7 +116,18 @@ Task:\n'''
             tests = test_runner(checkout)
         except WorkerError as error:
             status = str(error).split(':', 1)[0]
+            last_error = status
+            if isinstance(worker, CodexWorker):
+                for event in worker.last_events:
+                    recorder.record('worker_event', attempts, **event)
             recorder.record('development_error', attempts, reason=status)
+            repairable = {'invalid_edit_list', 'edit_count_limit', 'read_only_edit_rejected',
+                          'invalid_edit_fields', 'invalid_edit_content', 'invalid_worker_path',
+                          'existing_tests_are_protected', 'blocked_status_with_edits', 'invalid_worker_summary'}
+            if status in repairable and attempt < max_repairs:
+                prompt = instructions + task + '\nYour previous structured response was rejected by the coordinator. Rule: ' + status + '. No edits from that response were applied. Correct the response format or conflicting status. Propose only permitted files; do not weaken committed tests. When your edit proposals are ready, report completed. The coordinator applies edits and runs tests; you do not need shell access. A genuinely blocked response must have file_edits=[].'
+                recorder.record('repair_requested', attempts, reason='edit_validation', rule=status)
+                continue
             break
         recorder.record('tests_finished', attempts, passed=tests.passed, tests_run=tests.count)
         if worker_task_status == 'blocked':
@@ -130,7 +143,7 @@ Task:\n'''
     report = {
         'run_id': run_id, 'workspace_run': workspace_run or run_id, 'status': status, 'worker_task_status': worker_task_status, 'worker_attempts': attempts,
         'tests_passed': tests.passed, 'tests_run': tests.count,
-        'branch': branch, 'worktree': str(checkout), 'changed_files': changed,
+        'branch': branch, 'worktree': str(checkout), 'read_only': read_only, 'last_error': last_error, 'changed_files': changed,
         'trace_file': str(recorder.path),
         'report_file': str(folder / 'report.json'),
         'limitations': 'Tests passing does not prove task fulfillment. Changes require review; no merge or push. Codex uses plan allowance; no token cap is enforced by this coordinator.',
