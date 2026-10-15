@@ -1,6 +1,6 @@
 # Project Horizon — Sprint 01: Trace-first experimental baseline
 
-**Status: research prototype with a deterministic baseline, bounded agent controller, and optional OpenAI adapter. Live model behavior has not yet been tested. Factual answer correctness is not automatically verified.**
+**Status: research prototype. Horizon Study defaults to a mock; its optional paid API adapter is parked. Newton has a new conversational Economy controller tested offline, awaiting approval for live verification. Factual answer correctness is not automatically verified.**
 
 This repo establishes a runnable, free-to-use test harness for our longer-term goal: measuring where AI agents deviate, how serious deviations are, when they recover, and whether outcomes are actually correct. We first prove that we can ingest a document, use tools in a bounded workflow, log an observable execution trace, and detect a known citation error. **The newer controller and opt-in LLM adapter are described below; the original baseline remains available.**
 
@@ -158,82 +158,30 @@ Official references:
 - https://developers.openai.com/api/docs/models/gpt-4.1-mini
 
 
-## Current development workflow: subscription-based Codex coordinator
+## Newton: conversational development agent, Economy mode
 
-This is a development assistant for working on Horizon, separate from the Study agent.
-It uses the installed Codex CLI with **ChatGPT sign-in**, not an OpenAI API key. Model
-inference is remote and consumes your plan allowance; it is not offline or unlimited.
-The direct paid API adapter above is parked and remains opt-in. Do not enable it for
-this workflow.
+From this project folder, run `python -m newton` and talk normally. The latest session
+resumes automatically. Ask for a plan, authorize one small implementation step, then
+use free local commands such as `status`, `show changes`, `run tests`, and `quit`.
 
-You can launch the coordinator without setting PYTHONPATH:
+Defaults: at most **one live Codex invocation per message**, **three per session**,
+and **zero automatic retries**. Every live message previews its budget and requires
+approval. Counters persist across restarts; failed calls do not silently refund slots.
+A session-budget extension requires explicit confirmation. Local commands remain free
+of model inference after exhaustion. One invocation can contain internal model calls,
+so this is not an exact token, subscription-percentage, or monthly cap.
 
-```powershell
-cd "C:\Users\rober\Desktop\Ai agent\Horizon_Sprint_01"
-python -m devtools.cli --doctor
-python -m devtools.cli --worker mock --task "Exercise the development workflow"
-python -m devtools.cli --read-only --task "Inspect the source and suggest the smallest improvement. Do not edit files."
-python -m devtools.cli --task "Add a focused test for empty source documents and document the behavior."
-```
+Source context is selected locally and bounded. Plans, summaries, acceptance criteria
+and workspace progress persist separately from metadata-only execution traces. Edits
+require authorization, complete file context, path validation and preserved committed
+tests. Test success and task fulfillment are reported separately; manual criteria
+remain unverified. Changes remain in an isolated worktree for review.
 
-The first command checks installation and authentication, with no model inference.
-If authentication is rejected, run `codex login` and choose ChatGPT. The CLI must be
-available on PATH or in the Windows desktop app installation. The coordinator
-automatically checks `%LOCALAPPDATA%/OpenAI/Codex/bin/*/codex.exe` when PATH discovery
-fails. You may set `HORIZON_CODEX_PATH` to a specific executable. No API key is needed. The mock worker contacts no service.
+Use `python -m newton --doctor` to check the installed desktop CLI and ChatGPT sign-in.
+Use `python -m newton --mock` for an offline demo. A one-off live task additionally
+requires `--approve-live`; there is no paid API-key fallback. The earlier `devtools.cli`
+launcher forwards to Economy mode. The legacy library helpers remain for experiments.
 
-For each task the coordinator:
-1. Requires a clean Git project with committed HEAD and verifies ChatGPT sign-in.
-2. Creates a branch `codex/dev-...` and worktree under `runs/development/<run_id>`.
-   Your working checkout is preserved; ignored `.env` files are not copied.
-3. Invokes Codex via `codex exec --json`, with an explicit ChatGPT login restriction,
-   API-key/access-token environment variables removed, OpenAI provider selected,
-   user config ignored, web search/MCP/hooks disabled, and a read-only worker sandbox.
-4. Supplies at most 64 KB of permitted source snapshots to Codex, which returns
-   structured file edits. The coordinator validates every path before writing in the
-   worktree. At most ten text files per attempt; existing tests, hidden folders,
-   credentials and config files cannot be overwritten. New tests are allowed.
-5. Runs `unittest discover` independently using the same Python interpreter.
-6. Returns failed test output for at most one repair attempt by default (`--max-repairs`
-   allows 0, 1 or 2). Each attempt is a new ephemeral Codex session with the task,
-   existing worktree changes, and failure context. No cross-chat copying is required.
-7. Leaves the worktree and report for review. No automatic commits, merge or push.
-
-Structured worker summaries distinguish completed from blocked tasks. A blocked
-task exits with code 1 even when tests pass. The summary is a model assertion, not
-independent proof of fulfillment. Reports distinguish tests passing from task fulfillment: `tests_passed_review_required`
-means tests passed, not that every requested behavior was verified. Open the worktree
-path printed in `report.json` in VS Code to inspect changes. Use `git diff` there.
-Worktrees are retained for review; this increment does not automatically clean them up.
-
-Default worker timeout is 180 seconds; test timeout is 90 seconds. On timeout the
-coordinator terminates its child process tree. It does not enforce a Codex token cap;
-keep tasks small and retries low to conserve your plan allowance. The `--read-only` command
-rejects all proposed edits and disables repairs. The worker always uses a read-only
-sandbox; only the coordinator applies validated edits.
-
-The local JSONL trace stores only normalized event metadata, tool/command status,
-numeric usage where supplied, test counts and repair events. Prompts, raw commands,
-test output, worker replies and hidden reasoning are excluded from stored traces/reports.
-The final worker reply is displayed in CLI output only. Codex's own data handling
-still applies. Paths/changed filenames are included in the local report. Use synthetic
-materials. The coding worker is more capable than Study's three-tool controller; it is
-not a replacement model adapter for Study and does not automatically add Claude access.
-
-Official documentation:
-- https://learn.chatgpt.com/docs/auth
-- https://learn.chatgpt.com/docs/non-interactive-mode
-
-
-## Newton: personal development agent
-
-The development coordinator is now named **Newton**, separate from Horizon Reliability
-and Horizon Study. Start `python -m newton` from this folder to type tasks directly.
-Newton supports `/plan`, `/review`, `/status`, `/diff`, `/tests`, `/connections`,
-`/new` and `/quit`. Follow-up tasks reuse one isolated worktree; progress can be
-resumed with the printed session ID. Conversations stay in memory only.
-
-Preferences live in `newton.toml`. This is customization and workflow engineering,
-not model training. Codex is the only connected worker for now, using the verified
-ChatGPT sign-in. The paid API adapter remains parked. See `docs/NEWTON.md` for examples,
-limits and the distinction between Newton's role and Horizon's research components.
+Preferences are in `newton.toml`. Newton remains distinct from Horizon Reliability and
+Horizon Study. Codex is the only connected worker. See `docs/NEWTON.md` for exact commands,
+limits, saved-memory contents, migration behavior and the unverified live-test boundary.

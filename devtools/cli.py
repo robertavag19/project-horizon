@@ -1,41 +1,44 @@
-"""Launch a development task or check subscription authentication."""
+"""Compatibility launcher. Live tasks use Newton's persistent Economy budget."""
 from argparse import ArgumentParser
-import json
 from pathlib import Path
 import sys
 
-# Also support running the script from the project root without PYTHONPATH setup.
 PROJECT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT / 'src'))
 
-from .coordinator import coordinate
-from .workers import CodexWorker, MockWorker, WorkerError
-
 
 def main():
-    parser = ArgumentParser(description='Horizon local development coordinator (ChatGPT sign-in only)')
+    parser = ArgumentParser(description='Newton compatibility launcher (Economy mode)')
     parser.add_argument('--task')
     parser.add_argument('--worker', choices=['codex', 'mock'], default='codex')
     parser.add_argument('--doctor', action='store_true')
     parser.add_argument('--read-only', action='store_true')
-    parser.add_argument('--max-repairs', type=int, default=1)
-    parser.add_argument('--worker-timeout', type=int, default=180)
+    parser.add_argument('--max-repairs', type=int, default=0)
+    parser.add_argument('--worker-timeout', type=int, default=90)
+    parser.add_argument('--approve-live', action='store_true')
     args = parser.parse_args()
-    if not 1 <= args.worker_timeout <= 600:
-        parser.error('worker-timeout must be between 1 and 600 seconds')
+    if args.max_repairs != 0:
+        parser.error('Economy mode disables automatic retries; request a correction as a new message')
+    if not 1 <= args.worker_timeout <= 90:
+        parser.error('Economy worker-timeout must be between 1 and 90 seconds')
+    forwarded = ['newton', '--worker-timeout', str(args.worker_timeout)]
+    if args.task:
+        forwarded += ['--task', args.task]
+    if args.worker == 'mock':
+        forwarded.append('--mock')
+    if args.doctor:
+        forwarded.append('--doctor')
+    if args.read_only:
+        forwarded.append('--read-only')
+    if args.approve_live:
+        forwarded.append('--approve-live')
+    from newton.__main__ import main as newton_main
+    original = sys.argv
     try:
-        worker = MockWorker() if args.worker == 'mock' else CodexWorker(timeout=args.worker_timeout, read_only=args.read_only)
-        if args.doctor:
-            print(json.dumps(worker.preflight(PROJECT), indent=2))
-            return
-        if not args.task:
-            parser.error('supply --task or --doctor')
-        result = coordinate(PROJECT, args.task, worker, max_repairs=0 if args.read_only else args.max_repairs)
-    except (WorkerError, ValueError, OSError) as error:
-        parser.error(str(error))
-    print(json.dumps(result, indent=2))
-    if result['status'] != 'tests_passed_review_required':
-        raise SystemExit(1)
+        sys.argv = forwarded
+        return newton_main()
+    finally:
+        sys.argv = original
 
 
 if __name__ == '__main__':

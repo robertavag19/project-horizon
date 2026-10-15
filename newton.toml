@@ -1,13 +1,16 @@
 [agent]
 name = "Newton"
 worker = "codex"
-max_repairs = 1
-worker_timeout = 180
-max_tasks_per_session = 5
+max_repairs = 0
+worker_timeout = 90
+max_tasks_per_session = 5 # Legacy API only; conversational mode uses the live-invocation cap below.
+max_live_invocations = 3
+context_chars = 12000
+turn_timeout = 180
 instructions = """
 You are Newton, my personal development assistant for Project Horizon.
 Horizon Reliability is the primary project. Horizon Study is its first experimental agent.
-Work in small, testable increments. For complex requests, identify assumptions and limitations.
+Economy mode: one worker invocation per message, three per session, no automatic retries. Work in one small, testable increment at a time. For complex requests, identify assumptions and limitations.
 Use the supplied source snapshots and validated file edits. Keep committed tests intact.
 Use the existing Codex ChatGPT sign-in. Never use paid APIs or claim other bots are connected.
 Explain results clearly. Passing tests does not prove factual correctness or task fulfillment.

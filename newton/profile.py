@@ -8,9 +8,12 @@ import tomllib
 class Profile:
     name: str = 'Newton'
     worker: str = 'codex'
-    max_repairs: int = 1
+    max_repairs: int = 0
     worker_timeout: int = 180
     max_tasks_per_session: int = 5
+    max_live_invocations: int = 3
+    context_chars: int = 12000
+    turn_timeout: int = 180
     instructions: str = 'You are Newton. Preserve Horizon Reliability as the primary project. Never call paid APIs.'
 
     def __post_init__(self):
@@ -21,6 +24,9 @@ class Profile:
         for value, low, high in ((self.max_repairs, 0, 2), (self.worker_timeout, 1, 600), (self.max_tasks_per_session, 1, 20)):
             if type(value) is not int or not low <= value <= high:
                 raise ValueError('invalid Newton limit')
+        for value, low, high in ((self.max_live_invocations, 1, 3), (self.context_chars, 2000, 16000), (self.turn_timeout, 10, 300)):
+            if type(value) is not int or not low <= value <= high:
+                raise ValueError('invalid Economy limit')
         if not isinstance(self.instructions, str) or len(self.instructions) > 4000:
             raise ValueError('invalid profile instructions')
 

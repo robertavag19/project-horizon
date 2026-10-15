@@ -152,7 +152,10 @@ def apply_edits(root, changes, read_only=False, protected_tests=None):
             raise WorkerError('invalid_worker_path')
         if name != 'README.md' and (not relative.parts or relative.parts[0] not in ('src', 'tests', 'docs', 'examples')):
             raise WorkerError('invalid_worker_path')
-        if relative.suffix not in ('.py', '.md', '.txt'):
+        allowed_suffixes = {'.py', '.md', '.txt'}
+        if relative.parts and relative.parts[0] in ('examples', 'docs'):
+            allowed_suffixes.update({'.json', '.jsonl'})
+        if relative.suffix not in allowed_suffixes:
             raise WorkerError('invalid_worker_path')
         target = root / relative
         if target.is_symlink() or not target.resolve().is_relative_to(root) or target.resolve() in seen:

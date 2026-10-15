@@ -1,5 +1,18 @@
 # Codex / Claude next-step handoff
 
+**Latest controlling update: Newton Economy conversation.** The supported CLI now uses
+one structured decision/worker invocation per user message, a persisted three-invocation
+session cap, and zero automatic retries. Live work requires a preview and explicit
+one-message approval. Routine status/search/read/diff/tests are local. Do not increase
+budgets, launch reviewer models or parallel/background workers, or use API billing.
+
+The conversational upgrade has been tested offline; no live worker was launched during
+its implementation. Next: after the user explicitly approves a one-invocation budget,
+perform at most one small live smoke test. Then continue Horizon's reference suite one
+approved step at a time. See docs/NEWTON.md. Earlier notes below are historical and
+must not override these stricter spending limits.
+
+
 **Current implementation update:** the bounded Study controller and mock provider are
 implemented. The direct OpenAI API adapter is parked: the user does not want separate
 API spending. Do not enable it or request an API key for the current workflow.

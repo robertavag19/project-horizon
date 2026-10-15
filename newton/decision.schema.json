@@ -1,0 +1,162 @@
+{
+  "type": "object",
+  "properties": {
+    "intent": {
+      "type": "string",
+      "enum": [
+        "discuss",
+        "investigate",
+        "plan",
+        "implement",
+        "review",
+        "clarify"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "blocked",
+        "needs_clarification"
+      ]
+    },
+    "reply": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "memory_summary": {
+      "type": "string"
+    },
+    "plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "file_exists",
+              "text_contains",
+              "tests_pass"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "step_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "description",
+          "kind",
+          "path",
+          "text",
+          "step_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "file_edits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tool_requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "inventory",
+              "read_text",
+              "search",
+              "inspect_changes",
+              "run_tests"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "start_line": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "path",
+          "query",
+          "start_line",
+          "limit"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "intent",
+    "status",
+    "reply",
+    "goal",
+    "memory_summary",
+    "plan",
+    "criteria",
+    "file_edits",
+    "tool_requests"
+  ],
+  "additionalProperties": false
+}
