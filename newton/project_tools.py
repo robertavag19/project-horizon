@@ -128,7 +128,7 @@ class ProjectTools:
             return {'passed': checked.passed, 'count': checked.count, 'output': checked.output}
         raise WorkerError('unknown_local_tool')
 
-    def context(self, task, *, preferred=(), max_chars=12000):
+    def context(self, task, *, preferred=(), max_chars=12000, max_files=5, file_chars=6000):
         """Choose relevant full files where possible; mark every excerpt explicitly."""
         inventory = self.inventory(120)
         words = set(re.findall(r'[a-zA-Z_]{3,}', task.casefold()))
@@ -152,10 +152,10 @@ class ProjectTools:
         files, fingerprints, omitted = [], {}, []
         remaining = max_chars
         for score, name, text in ranked:
-            if remaining < 200 or len(files) >= 5:
+            if remaining < 200 or len(files) >= max_files:
                 omitted.append(name)
                 continue
-            available = min(remaining, 6000)
+            available = min(remaining, file_chars)
             complete = len(text) <= available
             content = text if complete else text[:available]
             files.append({'path': name, 'content': content, 'complete': complete})

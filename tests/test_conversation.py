@@ -45,7 +45,7 @@ class EconomyTests(unittest.TestCase):
     def setup_session(self, folder, value=None):
         root = fixtures.CoordinatorTests().make_repo(folder)
         worker = FakeWorker(value or decision())
-        session = ConversationSession(root, Profile(max_repairs=2), worker_factory=lambda: worker)
+        session = ConversationSession(root, Profile(max_repairs=2, max_live_invocations=3), worker_factory=lambda: worker)
         return root, worker, session
 
     def test_no_live_launch_without_explicit_message_approval(self):
@@ -320,6 +320,9 @@ class ContextAndDecisionTests(unittest.TestCase):
                 worker.decide('task', Path('.'))
         self.assertEqual(execute.call_count, 1)
         self.assertIn('forced_login_method="chatgpt"', execute.call_args.args[0])
+        from newton.worker import DISABLED_WORKER_FEATURES
+        for feature in DISABLED_WORKER_FEATURES:
+            self.assertIn('features.' + feature + '=false', execute.call_args.args[0])
 
 class MigrationAndInterfaceTests(unittest.TestCase):
     def test_legacy_session_counts_historical_attempts_conservatively(self):
@@ -402,7 +405,7 @@ class MigrationAndInterfaceTests(unittest.TestCase):
                 cli.main()
             execute.assert_not_called()
             self.assertIn('No saved goal', output.getvalue())
-            self.assertIn('0/3 live invocations', output.getvalue())
+            self.assertIn('0/50 live invocations', output.getvalue())
 
     def test_cli_one_off_task_does_not_run_without_approval(self):
         import contextlib
@@ -421,7 +424,7 @@ class MigrationAndInterfaceTests(unittest.TestCase):
 
 
 class ConversationalFlowTests(unittest.TestCase):
-    def test_cli_plan_then_one_implementation_step_with_two_explicit_approvals(self):
+    def test_cli_plan_then_one_implementation_step_with_one_launch_approval(self):
         import contextlib
         import importlib
         import io
@@ -440,12 +443,12 @@ class ConversationalFlowTests(unittest.TestCase):
             root = fixtures.CoordinatorTests().make_repo(folder)
             output = io.StringIO()
             with patch.object(cli, 'PROJECT', root), patch.object(cli, 'load_profile', return_value=Profile()), \
-                 patch('sys.argv', ['newton']), patch('builtins.input', side_effect=['Help me plan the value change', 'y', 'Implement the first step', 'y', 'status', 'quit']), \
+                 patch('sys.argv', ['newton']), patch('builtins.input', side_effect=['y', 'n', 'Help me plan the value change', 'Implement the first step', 'status', 'quit']), \
                  patch('newton.conversation.ConversationWorker', side_effect=factory), contextlib.redirect_stdout(output):
                 cli.main()
             self.assertEqual(len(workers), 2)
             self.assertTrue(all(worker.calls == 1 for worker in workers))
-            self.assertIn('2/3 live invocations', output.getvalue())
+            self.assertIn('2/50 live invocations', output.getvalue())
             restored = ConversationSession(root, Profile(), session_id='latest')
             self.assertEqual(restored.state['plan'][0]['state'], 'needs_review')
             self.assertEqual((root / 'src/value.py').read_text(), 'VALUE = 1\n')

@@ -120,7 +120,9 @@
               "read_text",
               "search",
               "inspect_changes",
-              "run_tests"
+              "run_tests",
+              "find_files",
+              "read_file"
             ]
           },
           "path": {

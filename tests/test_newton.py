@@ -24,7 +24,7 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(profile.max_repairs, 0)
 
     def test_unknown_connection_or_bad_limit_rejected(self):
-        for values in ({'worker': 'claude'}, {'max_repairs': True}, {'max_tasks_per_session': 0}):
+        for values in ({'worker': 'unknown_vendor'}, {'max_repairs': True}, {'max_tasks_per_session': 0}):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 Profile(**values)
 

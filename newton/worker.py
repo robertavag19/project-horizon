@@ -7,12 +7,21 @@ from devtools.workers import (find_codex, check_subscription, execute,
 from .decisions import validate_decision
 
 
+# Keep file I/O in the approval-gated coordinator, not native model tools.
+# Supported names were verified against the installed CLI feature list.
+DISABLED_WORKER_FEATURES = ('shell_tool', 'view_image', 'apps', 'plugins', 'remote_plugin',
+                            'multi_agent', 'goals', 'hooks', 'code_mode_host', 'browser_use',
+                            'computer_use', 'in_app_browser', 'image_generation',
+                            'skill_search', 'workspace_dependencies')
+
+
 class ConversationWorker:
     is_live = True
 
-    def __init__(self, timeout=90, command=None):
+    def __init__(self, timeout=90, command=None, model=''):
         self.command = command or find_codex()
         self.timeout = timeout
+        self.model = model
         self.called = False
         self.events = []
 
@@ -28,7 +37,12 @@ class ConversationWorker:
                    '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
                    '-c', 'hide_agent_reasoning=true', '-c', 'web_search="disabled"',
                    '-c', 'mcp_servers={}', '-c', 'hooks={}',
-                   '--output-schema', str(Path(__file__).with_name('decision.schema.json')), '-']
+                   '--output-schema', str(getattr(self, 'schema_path', Path(__file__).with_name('decision.schema.json'))), '-']
+        # Configuration overrides are local; do not alter the user's global CLI setup.
+        for feature in DISABLED_WORKER_FEATURES:
+            command[len(self.command):len(self.command)] = ['-c', 'features.' + feature + '=false']
+        if self.model:
+            command[len(self.command):len(self.command)] = ['--model', self.model]
         response = execute(command, cwd=root, env=subscription_environment(), timeout=self.timeout, input_text=prompt)
         final = None
         completed = failed = False

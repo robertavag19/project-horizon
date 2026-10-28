@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "pilot": {
+    "country": "Canada",
+    "province": "Ontario",
+    "authority": "Ontario Ministry of Education",
+    "curriculum": "Ontario secondary Science",
+    "grade": "11",
+    "subject": "Physics",
+    "course": "SPH3U",
+    "curriculum_version": "2008 revised",
+    "mapping_status": "Selected expectations checked against the official 2008 PDF on 2026-10-26; not full course accreditation or a guarantee of current school adoption."
+  },
+  "sources": [
+    {
+      "id": "on-science-2008",
+      "title": "Ontario Grades 11–12 Science (2008 revised)",
+      "author": "Ontario Ministry of Education",
+      "publisher": "Ontario Ministry of Education",
+      "language": "en",
+      "version": "2008 revised",
+      "kind": "official_curriculum",
+      "origin": "https://www.edu.gov.on.ca/eng/curriculum/secondary/2009science11_12.pdf",
+      "permission": "Reference metadata and brief paraphrases only; original PDF not redistributed",
+      "tags": [
+        "Canada",
+        "Ontario",
+        "SPH3U",
+        "Grade 11"
+      ],
+      "chunks": [
+        {
+          "locator": "SPH3U-B2.1",
+          "pdf_page_index": 185,
+          "page_label": "184",
+          "text": "SPH3U B2.1 covers terminology used to describe motion.",
+          "objectives": [
+            "terminology"
+          ]
+        },
+        {
+          "locator": "SPH3U-B2.2",
+          "pdf_page_index": 185,
+          "page_label": "184",
+          "text": "SPH3U B2.2 concerns interpreting graphs relating position, velocity, acceleration and time in one dimension.",
+          "objectives": [
+            "graphs"
+          ]
+        },
+        {
+          "locator": "SPH3U-B3.1",
+          "pdf_page_index": 186,
+          "page_label": "185",
+          "text": "SPH3U B3.1 addresses average, instantaneous and constant speed, velocity and acceleration.",
+          "objectives": [
+            "velocity",
+            "acceleration"
+          ]
+        },
+        {
+          "locator": "SPH3U-C3.3",
+          "pdf_page_index": 188,
+          "page_label": "187",
+          "text": "SPH3U C3.3 applies Newton’s laws to qualitative explanations of forces.",
+          "objectives": [
+            "forces"
+          ]
+        }
+      ],
+      "checked_on": "2026-10-26",
+      "checksum": "ddfe13d089462de3dca5b183eb45682882985c702c33e859dd7ca7c990443152",
+      "checksum_scope": "catalogue chunks",
+      "document_checksum": "695740d180219f73979f75d49fdcc8289168541e5bd461d7a189547c0984473c"
+    },
+    {
+      "id": "newton-mechanics-v1",
+      "title": "Newton mechanics notes — English pilot",
+      "author": "Newton project",
+      "publisher": "Newton project",
+      "language": "en",
+      "version": "1",
+      "kind": "original_reference",
+      "origin": "original:Newton",
+      "permission": "Original project material; repository licensing applies",
+      "tags": [
+        "physics",
+        "mechanics"
+      ],
+      "chunks": [
+        {
+          "locator": "velocity",
+          "pdf_page_index": null,
+          "page_label": null,
+          "objectives": [
+            "velocity",
+            "terminology"
+          ],
+          "text": "Average velocity is displacement divided by elapsed time: v_avg = Δx/Δt. Displacement has direction. Speed is scalar and average speed is total distance divided by elapsed time. Returning to a starting point can give zero average velocity while distance and average speed are positive. Use metres and seconds for m/s. Example: displacement +20 m over 4 s gives +5 m/s. An instant requires a local rate, not a finite-interval average."
+        },
+        {
+          "locator": "acceleration",
+          "pdf_page_index": null,
+          "page_label": null,
+          "objectives": [
+            "acceleration"
+          ],
+          "text": "Average acceleration is change in velocity divided by elapsed time: a_avg = (v_final − v_initial)/Δt. Units are m/s². Example: velocity rises from +2 m/s to +8 m/s in 3 s, giving +2 m/s². Negative acceleration does not always mean slowing down; compare its direction with velocity. A negative velocity and negative acceleration increase speed. Time must be positive for these examples."
+        },
+        {
+          "locator": "graphs",
+          "pdf_page_index": null,
+          "page_label": null,
+          "objectives": [
+            "graphs"
+          ],
+          "text": "For constant acceleration in one dimension, x(t)=x0+v0*t+0.5*a*t² and v(t)=v0+a*t. The slope of position-time gives velocity; slope of velocity-time gives acceleration. Signed area under velocity-time gives displacement, not generally total distance. These equations assume constant acceleration throughout the interval. For x0=0 m, v0=2 m/s, a=3 m/s² and t=4 s, position is 32 m and velocity is 14 m/s."
+        },
+        {
+          "locator": "forces",
+          "pdf_page_index": null,
+          "page_label": null,
+          "objectives": [
+            "forces"
+          ],
+          "text": "In an inertial frame with constant mass, net force F_net=m*a. Net force is the vector sum of forces, not necessarily one applied force. If m=2 kg and a=3 m/s², F_net=6 N. With zero net force, an object can move at constant nonzero velocity. Action-reaction forces act on different objects; they do not cancel in one object’s force sum."
+        },
+        {
+          "locator": "circular",
+          "pdf_page_index": null,
+          "page_label": null,
+          "objectives": [
+            "circular"
+          ],
+          "text": "For uniform circular motion, speed is constant while the direction of velocity changes. Velocity is tangent; centripetal acceleration points to the centre with magnitude a=v²/r, r>0. With v=6 m/s and r=3 m, a=12 m/s² inward. Angular speed ω=v/r in rad/s. Tangential acceleration a_t=r*α for fixed radius; a_t is distinct from inward acceleration. An object may have α=0 yet nonzero centripetal acceleration. This is enrichment; no SPH3U expectation mapping is asserted."
+        },
+        {
+          "locator": "units",
+          "pdf_page_index": null,
+          "page_label": null,
+          "objectives": [
+            "units"
+          ],
+          "text": "Convert quantities to compatible units before substituting: 100 cm=1 m, 1000 m=1 km, 60 s=1 min, 1000 g=1 kg. Divide km/h by 3.6 to get m/s. Dimensions of acceleration are length/time² and of force mass*length/time². Displayed examples use six significant digits; numerical grading allows 0.5% relative error or 1e-8 absolute error. This tolerance is a prototype choice, not an official marking rule."
+        }
+      ],
+      "checksum": "f5d570c6a171950ae4d7199593c8f339e865a330cf72df31c768789eb68a3794",
+      "checksum_scope": "catalogue chunks"
+    }
+  ]
+}

@@ -8,5 +8,9 @@ version = "0.1.0"
 description = "Project Horizon deterministic study-task execution tracing baseline"
 requires-python = ">=3.11"
 
+[project.optional-dependencies]
+documents = ["pypdf"]
+study = ["fsrs==6.3.2", "typing-extensions==4.16.0"]
+
 [tool.setuptools.packages.find]
 where = ["src"]

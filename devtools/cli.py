@@ -19,8 +19,8 @@ def main():
     args = parser.parse_args()
     if args.max_repairs != 0:
         parser.error('Economy mode disables automatic retries; request a correction as a new message')
-    if not 1 <= args.worker_timeout <= 90:
-        parser.error('Economy worker-timeout must be between 1 and 90 seconds')
+    if not 1 <= args.worker_timeout <= 600:
+        parser.error('Economy worker-timeout must be between 1 and 600 seconds')
     forwarded = ['newton', '--worker-timeout', str(args.worker_timeout)]
     if args.task:
         forwarded += ['--task', args.task]

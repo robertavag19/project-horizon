@@ -1,0 +1,1544 @@
+{
+  "type": "object",
+  "properties": {
+    "intent": {
+      "type": "string",
+      "enum": [
+        "discuss",
+        "investigate",
+        "plan",
+        "implement",
+        "review",
+        "clarify"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "blocked",
+        "needs_clarification"
+      ]
+    },
+    "reply": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    },
+    "memory_summary": {
+      "type": "string"
+    },
+    "plan": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "criteria": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "file_exists",
+              "text_contains",
+              "tests_pass"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "step_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "description",
+          "kind",
+          "path",
+          "text",
+          "step_id"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "file_edits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "content"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tool_requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "inventory",
+              "read_text",
+              "search",
+              "inspect_changes",
+              "run_tests",
+              "find_files",
+              "read_file"
+            ]
+          },
+          "path": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "start_line": {
+            "type": "integer"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "path",
+          "query",
+          "start_line",
+          "limit"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "schema_version": {
+      "type": "integer",
+      "enum": [
+        2
+      ]
+    },
+    "education": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "explanation"
+                    ],
+                    "maxLength": 1200
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "objective": {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "source_id": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "locator": {
+                          "type": "string",
+                          "maxLength": 100
+                        }
+                      },
+                      "required": [
+                        "source_id",
+                        "locator"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 5
+                  },
+                  "body": {
+                    "type": "string",
+                    "maxLength": 3000
+                  }
+                },
+                "required": [
+                  "type",
+                  "title",
+                  "objective",
+                  "sources",
+                  "body"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "worked_example"
+                    ],
+                    "maxLength": 1200
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "objective": {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "source_id": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "locator": {
+                          "type": "string",
+                          "maxLength": 100
+                        }
+                      },
+                      "required": [
+                        "source_id",
+                        "locator"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 5
+                  },
+                  "body": {
+                    "type": "string",
+                    "maxLength": 3000
+                  },
+                  "calculation": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "formula": {
+                            "type": "string",
+                            "enum": [
+                              "average_velocity"
+                            ],
+                            "maxLength": 1200
+                          },
+                          "inputs": {
+                            "type": "object",
+                            "properties": {
+                              "displacement": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "maxLength": 20
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "time": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "maxLength": 20
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "displacement",
+                              "time"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "formula",
+                          "inputs"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "formula": {
+                            "type": "string",
+                            "enum": [
+                              "acceleration"
+                            ],
+                            "maxLength": 1200
+                          },
+                          "inputs": {
+                            "type": "object",
+                            "properties": {
+                              "initial_velocity": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "maxLength": 20
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "final_velocity": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "maxLength": 20
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "time": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "maxLength": 20
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "initial_velocity",
+                              "final_velocity",
+                              "time"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "formula",
+                          "inputs"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "formula": {
+                            "type": "string",
+                            "enum": [
+                              "net_force"
+                            ],
+                            "maxLength": 1200
+                          },
+                          "inputs": {
+                            "type": "object",
+                            "properties": {
+                              "mass": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "maxLength": 20
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "acceleration": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "maxLength": 20
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "mass",
+                              "acceleration"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "formula",
+                          "inputs"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "formula": {
+                            "type": "string",
+                            "enum": [
+                              "centripetal"
+                            ],
+                            "maxLength": 1200
+                          },
+                          "inputs": {
+                            "type": "object",
+                            "properties": {
+                              "speed": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "maxLength": 20
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "radius": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "type": "number"
+                                  },
+                                  "unit": {
+                                    "type": "string",
+                                    "maxLength": 20
+                                  }
+                                },
+                                "required": [
+                                  "value",
+                                  "unit"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "required": [
+                              "speed",
+                              "radius"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "formula",
+                          "inputs"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "title",
+                  "objective",
+                  "sources",
+                  "body",
+                  "calculation"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "visualization"
+                    ],
+                    "maxLength": 1200
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "objective": {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "source_id": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "locator": {
+                          "type": "string",
+                          "maxLength": 100
+                        }
+                      },
+                      "required": [
+                        "source_id",
+                        "locator"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 5
+                  },
+                  "spec": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "motion"
+                            ],
+                            "maxLength": 1200
+                          },
+                          "parameters": {
+                            "type": "object",
+                            "properties": {
+                              "position": {
+                                "type": "number"
+                              },
+                              "velocity": {
+                                "type": "number"
+                              },
+                              "acceleration": {
+                                "type": "number"
+                              },
+                              "duration": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "position",
+                              "velocity",
+                              "acceleration",
+                              "duration"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "parameters"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "circular"
+                            ],
+                            "maxLength": 1200
+                          },
+                          "parameters": {
+                            "type": "object",
+                            "properties": {
+                              "speed": {
+                                "type": "number"
+                              },
+                              "radius": {
+                                "type": "number"
+                              },
+                              "angle": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "speed",
+                              "radius",
+                              "angle"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "parameters"
+                        ],
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "type",
+                  "title",
+                  "objective",
+                  "sources",
+                  "spec"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "flashcards"
+                    ],
+                    "maxLength": 1200
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "objective": {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "source_id": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "locator": {
+                          "type": "string",
+                          "maxLength": 100
+                        }
+                      },
+                      "required": [
+                        "source_id",
+                        "locator"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 5
+                  },
+                  "cards": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "basic",
+                            "cloze",
+                            "concept",
+                            "misconception",
+                            "numeric"
+                          ],
+                          "maxLength": 1200
+                        },
+                        "front": {
+                          "type": "string",
+                          "maxLength": 500
+                        },
+                        "back": {
+                          "type": "string",
+                          "maxLength": 800
+                        },
+                        "explanation": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "difficulty": {
+                          "type": "string",
+                          "enum": [
+                            "easy",
+                            "medium",
+                            "hard"
+                          ],
+                          "maxLength": 1200
+                        },
+                        "sources": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "source_id": {
+                                "type": "string",
+                                "maxLength": 100
+                              },
+                              "locator": {
+                                "type": "string",
+                                "maxLength": 100
+                              }
+                            },
+                            "required": [
+                              "source_id",
+                              "locator"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 5
+                        },
+                        "calculation": {
+                          "anyOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "formula": {
+                                      "type": "string",
+                                      "enum": [
+                                        "average_velocity"
+                                      ],
+                                      "maxLength": 1200
+                                    },
+                                    "inputs": {
+                                      "type": "object",
+                                      "properties": {
+                                        "displacement": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "time": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "required": [
+                                        "displacement",
+                                        "time"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "formula",
+                                    "inputs"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "formula": {
+                                      "type": "string",
+                                      "enum": [
+                                        "acceleration"
+                                      ],
+                                      "maxLength": 1200
+                                    },
+                                    "inputs": {
+                                      "type": "object",
+                                      "properties": {
+                                        "initial_velocity": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "final_velocity": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "time": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "required": [
+                                        "initial_velocity",
+                                        "final_velocity",
+                                        "time"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "formula",
+                                    "inputs"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "formula": {
+                                      "type": "string",
+                                      "enum": [
+                                        "net_force"
+                                      ],
+                                      "maxLength": 1200
+                                    },
+                                    "inputs": {
+                                      "type": "object",
+                                      "properties": {
+                                        "mass": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "acceleration": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "required": [
+                                        "mass",
+                                        "acceleration"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "formula",
+                                    "inputs"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "formula": {
+                                      "type": "string",
+                                      "enum": [
+                                        "centripetal"
+                                      ],
+                                      "maxLength": 1200
+                                    },
+                                    "inputs": {
+                                      "type": "object",
+                                      "properties": {
+                                        "speed": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "radius": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "required": [
+                                        "speed",
+                                        "radius"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "formula",
+                                    "inputs"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "front",
+                        "back",
+                        "explanation",
+                        "difficulty",
+                        "sources",
+                        "calculation"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 10
+                  }
+                },
+                "required": [
+                  "type",
+                  "title",
+                  "objective",
+                  "sources",
+                  "cards"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "practice"
+                    ],
+                    "maxLength": 1200
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "objective": {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "source_id": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "locator": {
+                          "type": "string",
+                          "maxLength": 100
+                        }
+                      },
+                      "required": [
+                        "source_id",
+                        "locator"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 5
+                  },
+                  "questions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "prompt": {
+                          "type": "string",
+                          "maxLength": 800
+                        },
+                        "kind": {
+                          "type": "string",
+                          "enum": [
+                            "numeric",
+                            "open"
+                          ],
+                          "maxLength": 1200
+                        },
+                        "calculation": {
+                          "anyOf": [
+                            {
+                              "type": "null"
+                            },
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "formula": {
+                                      "type": "string",
+                                      "enum": [
+                                        "average_velocity"
+                                      ],
+                                      "maxLength": 1200
+                                    },
+                                    "inputs": {
+                                      "type": "object",
+                                      "properties": {
+                                        "displacement": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "time": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "required": [
+                                        "displacement",
+                                        "time"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "formula",
+                                    "inputs"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "formula": {
+                                      "type": "string",
+                                      "enum": [
+                                        "acceleration"
+                                      ],
+                                      "maxLength": 1200
+                                    },
+                                    "inputs": {
+                                      "type": "object",
+                                      "properties": {
+                                        "initial_velocity": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "final_velocity": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "time": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "required": [
+                                        "initial_velocity",
+                                        "final_velocity",
+                                        "time"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "formula",
+                                    "inputs"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "formula": {
+                                      "type": "string",
+                                      "enum": [
+                                        "net_force"
+                                      ],
+                                      "maxLength": 1200
+                                    },
+                                    "inputs": {
+                                      "type": "object",
+                                      "properties": {
+                                        "mass": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "acceleration": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "required": [
+                                        "mass",
+                                        "acceleration"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "formula",
+                                    "inputs"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "formula": {
+                                      "type": "string",
+                                      "enum": [
+                                        "centripetal"
+                                      ],
+                                      "maxLength": 1200
+                                    },
+                                    "inputs": {
+                                      "type": "object",
+                                      "properties": {
+                                        "speed": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        },
+                                        "radius": {
+                                          "type": "object",
+                                          "properties": {
+                                            "value": {
+                                              "type": "number"
+                                            },
+                                            "unit": {
+                                              "type": "string",
+                                              "maxLength": 20
+                                            }
+                                          },
+                                          "required": [
+                                            "value",
+                                            "unit"
+                                          ],
+                                          "additionalProperties": false
+                                        }
+                                      },
+                                      "required": [
+                                        "speed",
+                                        "radius"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "formula",
+                                    "inputs"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "hints": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "maxLength": 600
+                          },
+                          "maxItems": 4
+                        },
+                        "rubric": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "sources": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "source_id": {
+                                "type": "string",
+                                "maxLength": 100
+                              },
+                              "locator": {
+                                "type": "string",
+                                "maxLength": 100
+                              }
+                            },
+                            "required": [
+                              "source_id",
+                              "locator"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "maxItems": 5
+                        }
+                      },
+                      "required": [
+                        "prompt",
+                        "kind",
+                        "calculation",
+                        "hints",
+                        "rubric",
+                        "sources"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 5
+                  }
+                },
+                "required": [
+                  "type",
+                  "title",
+                  "objective",
+                  "sources",
+                  "questions"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "study_plan"
+                    ],
+                    "maxLength": 1200
+                  },
+                  "title": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "objective": {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "source_id": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "locator": {
+                          "type": "string",
+                          "maxLength": 100
+                        }
+                      },
+                      "required": [
+                        "source_id",
+                        "locator"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "maxItems": 5
+                  },
+                  "steps": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "maxLength": 300
+                    },
+                    "maxItems": 6
+                  }
+                },
+                "required": [
+                  "type",
+                  "title",
+                  "objective",
+                  "sources",
+                  "steps"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "maxItems": 4
+        }
+      },
+      "required": [
+        "schema_version",
+        "blocks"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "intent",
+    "status",
+    "reply",
+    "goal",
+    "memory_summary",
+    "plan",
+    "criteria",
+    "file_edits",
+    "tool_requests",
+    "schema_version",
+    "education"
+  ],
+  "additionalProperties": false
+}

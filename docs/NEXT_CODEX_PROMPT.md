@@ -1,16 +1,31 @@
 # Codex / Claude next-step handoff
 
 **Latest controlling update: Newton Economy conversation.** The supported CLI now uses
-one structured decision/worker invocation per user message, a persisted three-invocation
-session cap, and zero automatic retries. Live work requires a preview and explicit
-one-message approval. Routine status/search/read/diff/tests are local. Do not increase
-budgets, launch reviewer models or parallel/background workers, or use API billing.
+one structured decision/worker invocation per user message, a persisted 50-invocation
+default session cap, and zero automatic retries. Live interactive work requires a budget
+preview and approval once per process launch; restarting requires fresh approval.
+Existing sessions keep their counters and require explicit approval to adopt a higher cap.
+Routine status/search/read/diff/tests are local. Budget commands require confirmation.
+Do not launch reviewer models or parallel/background workers, or use API billing.
+
+Personal-file reading/searching is optional and requires a separate explicit approval
+on every launch. The grant is memory-only; revocation clears selected excerpts. Do not
+scan the user's profile or launch workers as part of implementation tests. Use synthetic
+files. Personal access is read-only, excludes credentials/AppData/links, and never grants
+editing authority. Project switching requires its own explicit confirmation. PDF support
+uses optional local pypdf text extraction with page references; no paid/OCR fallback.
+
+Clear conversational implementation requests now authorize bounded edits directly.
+Clarification answers inherit only their saved task scope; an ambiguous yes grants no
+permission. New tasks archive old plans and criteria. Completion memory and current
+verification come from coordinator outcomes, with prior applied/tested work retained
+separately. Do not reintroduce repeated permission prompts or stale-memory permission gates.
 
 The conversational upgrade has been tested offline; no live worker was launched during
 its implementation. Next: after the user explicitly approves a one-invocation budget,
 perform at most one small live smoke test. Then continue Horizon's reference suite one
 approved step at a time. See docs/NEWTON.md. Earlier notes below are historical and
-must not override these stricter spending limits.
+must not override these current spending controls.
 
 
 **Current implementation update:** the bounded Study controller and mock provider are

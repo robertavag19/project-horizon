@@ -164,12 +164,21 @@ From this project folder, run `python -m newton` and talk normally. The latest s
 resumes automatically. Ask for a plan, authorize one small implementation step, then
 use free local commands such as `status`, `show changes`, `run tests`, and `quit`.
 
-Defaults: at most **one live Codex invocation per message**, **three per session**,
-and **zero automatic retries**. Every live message previews its budget and requires
-approval. Counters persist across restarts; failed calls do not silently refund slots.
-A session-budget extension requires explicit confirmation. Local commands remain free
+Defaults: at most **one live Codex invocation per message**, **50 per session**,
+and **zero automatic retries**. Approve live work once per interactive launch; normal
+messages then run within that budget. Restarting requires fresh approval. Existing
+sessions offer an explicitly confirmed upgrade while preserving historical usage.
+Counters persist across restarts; failed calls do not silently refund slots.
+`set budget 50` sets a total limit; `add budget 10` adds ten available slots.
+Both commands require explicit confirmation and launch no worker. Local commands remain free
 of model inference after exhaustion. One invocation can contain internal model calls,
 so this is not an exact token, subscription-percentage, or monthly cap.
+
+Clear requests such as `I want you to create src/angular_motion.py` authorize bounded
+edits without another confirmation. Necessary clarification answers continue the saved
+request. New tasks preserve earlier review steps in history; `show previous tasks`
+shows them locally. Completion memory uses applied edits and current checks, with earlier
+successful work recorded separately from later failures.
 
 Source context is selected locally and bounded. Plans, summaries, acceptance criteria
 and workspace progress persist separately from metadata-only execution traces. Edits
@@ -183,5 +192,38 @@ requires `--approve-live`; there is no paid API-key fallback. The earlier `devto
 launcher forwards to Economy mode. The legacy library helpers remain for experiments.
 
 Preferences are in `newton.toml`. Newton remains distinct from Horizon Reliability and
-Horizon Study. Codex is the only connected worker. See `docs/NEWTON.md` for exact commands,
+Horizon Study. Codex is the default worker; experimental Claude Code and Gemini CLI adapters are also selectable after setup. See `docs/NEWTON.md` for exact commands,
 limits, saved-memory contents, migration behavior and the unverified live-test boundary.
+
+
+Newton can optionally read/search your user folder after a separate approval on each
+launch. Use `enable files`, `find files NAME`, `read file "ABSOLUTE_PATH" pages 1-3`,
+and `disable files`. Text/PDF reading is separate from editing permission. No personal
+scan runs on startup. `use project "ABSOLUTE_GIT_PROJECT_PATH"` requires a separate
+project-switch confirmation and preserves the existing isolated coding workflow.
+See `docs/NEWTON.md` for excluded folders, PDF limits, and local-only versus model work.
+
+## Local browser app and API
+
+Run `python -m newton.api --mode mock` from the project folder and open the private
+local link printed by the server. The first app has chat, separate file/live approvals,
+task progress, changed-file previews, test results and traces. **Try a mock task**
+simulates a complete task without calling a model or editing source files. Ordinary
+local commands still run locally. No live worker starts just by opening the app.
+
+Use `--mode codex` only when ready to test the real worker and approve its budget in
+the app. App sessions are separate from terminal sessions. See
+[the API contract and collaboration guide](docs/NEWTON_API.md) for endpoints, mock data,
+usage controls and how two developers can work independently against the same interface.
+
+Newton now defaults to a technical teacher role, with local teacher/supervisor/concise styles, recorded preflight-prevented calls, and explicit provider/model selection. See [the Newton guide](docs/NEWTON.md) for account setup, experimental Claude/Gemini adapters, unchanged usage limits, and [the app/API guide](docs/NEWTON_API.md) for the preferences screen.
+
+
+## Educational study pilot
+
+See [Newton Study guide](docs/NEWTON_STUDY.md) for the Ontario mechanics pilot, local profiles, interactive diagrams, flashcards, practice, sources, limits and offline/live test instructions.
+
+
+## Newton Hub
+
+Double-click Newton.cmd (a Desktop entry is available on this machine) for the local home screen and Activity dashboard. See the [hub guide](docs/NEWTON_HUB.md) for launch controls, metadata-only Langfuse export and remaining Docker setup.

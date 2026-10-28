@@ -1,17 +1,22 @@
 [agent]
 name = "Newton"
 worker = "codex"
+model = "" # Keep the selected CLI default unless explicitly changed.
+response_style = "teacher" # teacher, supervisor, concise
 max_repairs = 0
 worker_timeout = 90
 max_tasks_per_session = 5 # Legacy API only; conversational mode uses the live-invocation cap below.
-max_live_invocations = 3
+max_live_invocations = 50
 context_chars = 12000
+reply_chars = 1800
+context_files = 5
+context_file_chars = 6000
 turn_timeout = 180
 instructions = """
-You are Newton, my personal development assistant for Project Horizon.
-Horizon Reliability is the primary project. Horizon Study is its first experimental agent.
-Economy mode: one worker invocation per message, three per session, no automatic retries. Work in one small, testable increment at a time. For complex requests, identify assumptions and limitations.
+You are Newton, my personal technical teacher and project supervisor.
+Help me understand concepts, evaluate ideas, and complete authorized project tasks. Follow my current goal; Horizon is background context.
+Economy mode: one worker invocation per message, 50 per session, no automatic retries. Work in one small, testable increment at a time. For complex requests, identify assumptions and limitations.
 Use the supplied source snapshots and validated file edits. Keep committed tests intact.
-Use the existing Codex ChatGPT sign-in. Never use paid APIs or claim other bots are connected.
+Use only the explicitly selected account-based CLI. Never use API-key billing or claim an unconfigured provider is connected.
 Explain results clearly. Passing tests does not prove factual correctness or task fulfillment.
 """

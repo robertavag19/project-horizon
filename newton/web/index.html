@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Newton Hub</title><link rel="stylesheet" href="/hub.css"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/study.css"><script src="/app.js" defer></script><script src="/study-math.js" defer></script><script src="/study.js" defer></script><script src="/hub.js" defer></script>
+</head>
+<body class="hub-open">
+<div class="shell">
+<aside>
+  <div class="brand"><span class="mark">N</span><div><strong>Newton</strong><small>YOUR LOCAL WORKSPACE</small></div></div>
+  <div class="section-label">CONVERSATION</div>
+  <button id="new-session" class="secondary wide">＋ New session</button>
+  <div id="session-name" class="session-name">Connect to get started</div>
+  <details class="connection-settings"><summary>Teaching &amp; connection</summary>
+    <label for="response-style">Response style</label><select id="response-style" disabled><option value="teacher">Teacher</option><option value="supervisor">Supervisor</option><option value="concise">Concise</option></select>
+    <label for="provider">AI connection</label><select id="provider" disabled><option value="codex">ChatGPT / Codex</option><option value="claude">Claude Code</option><option value="gemini">Gemini CLI</option><option value="mock">Mock (no model)</option></select>
+    <label for="model">Model (optional)</label><input id="model" maxlength="100" placeholder="Use CLI default" disabled>
+    <button id="save-preferences" class="secondary wide" disabled>Apply preferences</button>
+    <small id="provider-status">Connections need their own account sign-in.</small>
+  </details>
+  <div class="section-label">PERMISSIONS</div>
+  <label class="permission"><span>Personal files<small>Read and search your user folder</small></span><input type="checkbox" id="files-permission" disabled></label>
+  <label class="permission"><span>Live work<small id="live-description">Off until explicitly approved</small></span><input type="checkbox" id="live-permission" disabled></label>
+  <p class="aside-note">Reading permission never grants permission to edit personal files. Grants expire when the server stops.</p>
+  <div class="allowance"><div class="section-label">INVOCATION BUDGET</div><strong id="budget">—</strong><div id="budget-detail">No live calls in mock mode</div><button id="add-budget" class="text-button">Add 10 slots</button></div>
+  <div class="sidebar-bottom"><span class="local-dot"></span> Runs on your computer</div>
+</aside>
+<main>
+  <header><div><span class="eyebrow">LEARN · BUILD · REVIEW</span><h1>Newton Hub</h1></div><span id="mode" class="badge">Connecting</span></header>
+  <div class="project"><span>PROJECT</span><code id="project-root">Connecting to the local server…</code></div>
+  <div id="notice" class="notice" role="status">Loading Newton…</div>
+  <nav class="study-topnav" aria-label="Workspace"><button id="open-hub" class="secondary">Home</button><button id="open-activity" class="secondary">Activity</button><button id="open-chat" class="secondary">Conversation</button><button id="open-study" class="secondary">Study tools · local</button></nav>
+  <section id="hub-panel" aria-label="Newton Hub"><div id="hub-content"></div></section>
+  <section id="study-panel" aria-label="Study tools"><nav id="study-nav" aria-label="Study sections"></nav><div id="study-content"></div></section>
+  <section id="messages" class="messages" aria-live="polite">
+    <div class="welcome" id="welcome"><div class="orbit">✦</div><h2>A clear view of the work.</h2><p>Ask a question, run local checks, or try a simulated task.<br>Approvals and results stay visible alongside the conversation.</p></div>
+  </section>
+  <div class="quick-actions"><button id="demo">Try a mock task ↗</button><button id="tests">Run local tests</button><button id="changes">Show changes</button><button id="help">Help</button></div>
+  <form id="composer"><label class="sr-only" for="message">Message Newton</label><textarea id="message" rows="2" maxlength="4000" placeholder="Tell Newton what you want to work on…" disabled></textarea><button id="send" class="primary" disabled>Send ↑</button></form>
+  <div class="composer-note">One task at a time · No automatic retries · Mock demonstrations are clearly labeled</div>
+</main>
+<section class="results-panel" aria-label="Task results">
+  <div class="section-label">EXECUTION</div><h2>Task overview</h2>
+  <div class="progress-card"><span id="task-dot" class="status-dot"></span><div><strong id="task-status">Ready when you are</strong><small id="task-detail">No task has started</small></div></div>
+  <div class="section-label">CHANGED FILES</div><div id="files" class="empty">Files will appear here after a task.</div>
+  <div class="section-label">TEST RESULTS</div><div id="test-results" class="empty">No checks in this task.</div>
+  <div class="section-label">LOCAL EVIDENCE</div><div id="tool-results" class="empty">No local tool results yet.</div>
+  <div class="section-label">PLAN</div><div id="plan" class="empty">No active plan.</div>
+  <button id="trace" class="secondary wide" disabled>View execution trace</button>
+  <details class="workspace"><summary>Workspace location</summary><code id="workspace">—</code></details>
+</section>
+</div>
+<dialog id="viewer"><div class="dialog-head"><h2 id="viewer-title">Details</h2><button id="close-viewer" aria-label="Close details">✕</button></div><pre id="viewer-content"></pre></dialog>
+</body></html>

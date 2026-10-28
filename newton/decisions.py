@@ -14,12 +14,21 @@ def safe_text(value, limit):
     return value
 
 
-def validate_decision(value):
-    if not isinstance(value, dict) or set(value) != FIELDS:
+def validate_decision(value, *, reply_chars=12000):
+    if not isinstance(value, dict) or set(value) not in (FIELDS, FIELDS | {'schema_version', 'education'}):
         raise WorkerError('invalid_decision_schema')
+    if 'education' in value:
+        if type(value['schema_version']) is not int or value['schema_version'] != 2 or not isinstance(value['education'], dict):
+            raise WorkerError('study_schema_version')
+        try:
+            size = len(json.dumps(value['education'], ensure_ascii=False, allow_nan=False))
+        except (ValueError, TypeError):
+            raise WorkerError('study_invalid_payload') from None
+        if size > 24000 or value.get('file_edits') or value.get('tool_requests'):
+            raise WorkerError('study_artifact_size_or_action_conflict')
     if not isinstance(value['intent'], str) or value['intent'] not in INTENTS or value['status'] not in ('completed', 'blocked', 'needs_clarification'):
         raise WorkerError('invalid_decision_status')
-    for name, limit in (('reply', 1800), ('goal', 1000), ('memory_summary', 1500)):
+    for name, limit in (('reply', reply_chars), ('goal', 1000), ('memory_summary', 1500)):
         safe_text(value[name], limit)
     for field, limit in (('plan', 6), ('criteria', 10), ('file_edits', 5), ('tool_requests', 3)):
         if not isinstance(value[field], list) or len(value[field]) > limit:
@@ -53,7 +62,7 @@ def validate_decision(value):
     for request in value['tool_requests']:
         if not isinstance(request, dict) or set(request) != {'name', 'path', 'query', 'start_line', 'limit'}:
             raise WorkerError('invalid_tool_arguments')
-        if request['name'] not in ('inventory', 'read_text', 'search', 'inspect_changes', 'run_tests'):
+        if request['name'] not in ('inventory', 'read_text', 'search', 'inspect_changes', 'run_tests', 'find_files', 'read_file'):
             raise WorkerError('unknown_local_tool')
         safe_text(request['path'], 240)
         safe_text(request['query'], 200)
@@ -71,8 +80,6 @@ def redact(text, limit=1500):
 
 
 def obvious_implementation_request(message):
-    # A conservative authorization gate, not the general intent classifier.
-    text = message.strip().lower()
-    if re.match(r'^(explain|discuss|review|investigate|plan|how|why|what|could you explain|can you explain)\b', text):
-        return False
-    return bool(re.match(r'^(?:(?:please|now)\s+)?(?:(?:can|could|would)\s+you\s+)?(?:implement|add|create|fix|update|change|write|build|make|refactor|start|continue|proceed)\b', text))
+    # Shared local request handling; no additional model invocation.
+    from .task_context import explicit_request, continuation
+    return explicit_request(message) or continuation(message)
